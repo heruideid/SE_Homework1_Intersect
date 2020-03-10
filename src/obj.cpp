@@ -1,4 +1,4 @@
-#include"obj.h"
+﻿#include"obj.h"
 #include<set>
 #include<cmath>
 #include<iostream>
@@ -29,7 +29,7 @@ Line::Line(double x1,double y1,double x2,double y2){
 Circle::Circle(double x, double y, double r) {
 	cx = x;
 	cy = y;
-	this->r = r;
+	cr = r;
 }
 
 void Line::getIntersectPoint(set<Point>* points,Line line){
@@ -41,98 +41,101 @@ void Line::getIntersectPoint(set<Point>* points,Line line){
 	x = (C2*B - C * B2)*1.0 / m;
 	y = (C*A2 - C2 * A)*1.0 / m;
 	points->insert({x,y});
-	//cout << new_point.x << " " << new_point.y << endl;//
+	//cout << x << " 13 " << y << endl;//
 }
 
 void Line::getIntersectPoint(set<Point>* points, Circle circle) {
 	if (points == nullptr) throw exception();
 	double x=0, y=0;
-	const double cx = circle.cx, cy = circle.cy, r = circle.r;
+	const double cx = circle.cx, cy = circle.cy, cr = circle.cr;
 	const double dis = (A*cx+B*cy+C) / sqrt(A*A+B*B);
-		if (B != 0) { //ֱ��y=kx+d   Բ(x-cx)^2+(y-cy)^2=r^2
+		if (B != 0) { //Ö±Ïßy=kx+d   Ô²(x-cx)^2+(y-cy)^2=r^2
 			const double k = -1 * A / B,d=-1*C/B;
 			const double a = (1 + k * k);
 			const double b = -1 * (2 * cx + 2 * cy*k-2*k*d);
-			const double c=cx*cx+d*d+cy*cy-2*cy*d-r*r;
+			const double c=cx*cx+d*d+cy*cy-2*cy*d-cr*cr;
 			if (equal(b*b,4*a*c)) {
 				x = (-b / 2 * a);
 				y = k * x + d;
 				points->insert({x,y});
-				//cout << new_point.x << " 1 " << new_point.y << endl;//
+				//cout << x << " 1 " << y << endl;//
 			}
 			else if (b*b - 4 * a*c > 0) {
 				const double delt = sqrt(b*b - 4 * a*c);
 				x = (-b+ delt)/ (2 * a);
 				y = k * x + d;
 				points->insert({x,y});
-				//cout << new_point1.x << " 2 " << new_point1.y << endl;//
+				//cout << x << " 2 " << y << endl;//
 
 				x = (-b-delt) / (2 * a);
 				y = k * x + d;
 				points->insert({x,y});
-				//cout << new_point2.x << "  3 " << new_point2.y << endl; //
+				//cout << x << "  3 " << y << endl; //
 			}
 		}
 		else {
-			const double x0 = -C / A; //ֱ��:x=-C/A  Բ(x-cx)^2+(y-cy)^2=r^2
-			if (equal(x0 - cx, r)) {
+			const double x0 = -C / A; //直线:x=-C/A  圆：(x-cx)^2+(y-cy)^2=r^2
+			if (equal(fabs(x0 - cx), cr)) {
 				x = x0;
 				y = cy;
 				points->insert({x,y});
-				//cout << new_point.x << " 4 " << new_point.y << endl;//
+				//cout << x << " 4 " << y << endl;//
 			}
-			else if (x0 - cx < r) {
+			else if (fabs(x0 - cx) < cr) {
 				x = x0;
-				y = cy+sqrt(r*r - (x0 - cx)*(x0 - cx));
+				y = cy+sqrt(cr*cr - (x0 - cx)*(x0 - cx));
 				points->insert({x,y});
-				//cout << new_point1.x << " " << new_point1.y << endl;//
+				//cout << x << " 5 " << y << endl;//
 
 				x = x0;
-				y = cy-sqrt(r*r - (x0 - cx)*(x0 - cx));
+				y = cy-sqrt(cr*cr - (x0 - cx)*(x0 - cx));
 				points->insert({x,y});
-				//cout << new_point2.x << " " << new_point2.y << endl;//
-
+				//cout << x << " 6 " << y << endl;//
 			}
 		}
 }
 
 void Circle::getIntersectPoint(set<Point>* points, Circle circle) {
 	if (points == nullptr) throw exception();
-	const double cx1 = circle.cx, cy1 = circle.cy, r1 = circle.r;
+	const double cx1 = circle.cx, cy1 = circle.cy, cr1 = circle.cr;
 	const double dis = sqrt((cx - cx1)*(cx - cx1) + (cy - cy1)*(cy - cy1));
-	if (dis < r - r1 || dis<r1 - r || dis>r + r1) return;
-	const double a = 2 * r1*(cx1 - cx);
-	const double b = 2 * r1*(cy1 - cy);
-	const double c = r * r - r1 * r1 - (cx1 - cx)*(cx1 - cx) - (cy1-cy)*(cy1-cy);
+	if (dis < cr - cr1 || dis<cr1 - cr || dis>cr + cr1) return;
+	const double a = 2 * cr1*(cx1 - cx);
+	const double b = 2 * cr1*(cy1 - cy);
+	const double c = cr * cr - cr1 *cr1 - (cx1 - cx)*(cx1 - cx) - (cy1-cy)*(cy1-cy);
 
 	const double p = a * a + b * b;
 	const double q = -2 * a*c;
 	const double r = c * c - b * b;
 	
-	if (equal(sqrt(q*q - 4 * p*r), 0)||sqrt(q*q - 4 * p*r)>0) {
+	if (equal(q*q - 4 * p*r, 0)||q*q - 4 * p*r>0) {
 		double x=0, y=0;
 		const double cos1 = (-q + sqrt(q*q - 4 * p*r)) / (2 * p);
 		double sin1 = sqrt(1 - cos1 * cos1);
-		x = r1 * cos1 + cx1;
-		y = r1 * sin1 + cy1;
-		if (equal((x - cx1)*(x - cx1) + (y - cy1)*(y - cy1), r1*r1)) ;
-		else {
-			sin1 = -sin1;
-			y = r1 * sin1 + cy1;
+		x = cr1 * cos1 + cx1;
+		y = cr1 * sin1 + cy1;
+		if (equal((x - cx)*(x - cx) + (y - cy)*(y - cy), cr*cr)) {
+			points->insert({ x,y });
+			//cout << x << " 9 " << y << endl;//
 		}
-		points->insert({x,y});
-		//cout << new_point1.x << " " << new_point1.y << endl;//
+		y = -sin1*cr1 + cy1;
+		if (equal((x - cx)*(x - cx) + (y - cy)*(y - cy), cr*cr)) {
+			points->insert({ x,y });
+			//cout << x << " 7 " << y << endl;//
+		}
 
 		const double cos2 = (-q - sqrt(q*q - 4 * p*r)) / (2 * p);
 		double sin2 = sqrt(1 - cos2 * cos2);
-		x = r1 * cos2 + cx1;
-		y = r1 * sin2 + cy1;
-		if (equal((x - cx1)*(x - cx1) + (y - cy1)*(y - cy1), r1*r1)) ;
-		else {
-			sin2 = -sin2;
-			y = r1 * sin2 + cy1;
+		x = cr1 * cos2 + cx1;
+		y = cr1 * sin2 + cy1;
+		if (equal((x - cx)*(x - cx) + (y - cy)*(y - cy), cr*cr)) {
+			points->insert({ x,y });
+			//cout << x << " 10 " << y << endl;//
 		}
-		points->insert({x,y});
-		//cout << new_point2.x << " " << new_point2.y << endl;//
+		y = -sin2*cr1 + cy1;
+		if (equal((x - cx)*(x - cx) + (y - cy)*(y - cy), cr*cr)){
+			points->insert({ x,y });
+			//cout << x << " 11 " << y << endl;//
+		}
 	}
 }
